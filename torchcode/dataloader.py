@@ -26,7 +26,7 @@ class Dataset(torch.utils.data.Dataset):
         #in validation set we DO NOT INCREMENT this so the same thresholds are always used for every epoch
         #If you only want one threshold even in training: set num_thresholds=1! Then one threshold pair per datapoint
         #like valset!
-        assert len(self.all_paths) == len(self.threshold_paths)
+        assert len(self.all_paths) <= len(self.threshold_paths)
 
         #VERY IMPORTANT: we use the sorted() function to sort paths! This just makes the ordering look weird but started
         #with this function so have to stick to it.
@@ -88,13 +88,23 @@ class Dataset2(Dataset):
     # We remove tanh from last layer when predicting infiltration length + Tp + velocity, because mean of Dw and p
     # after bringing into range [-1, 1] was at 0. Since we now predict products of these factors, we can observe
     # our data and see that when we normalize into [-1, 1] range, the mean (of our TRAINING DATA) is not at 0 anymore!
-    def __init__(self, datapath, beginning, ending, thrpath, necroticpath, num_thresholds=100, includesft=False, outputmode=0):
+    def __init__(self, datapath, beginning, ending, thrpath, necroticpath, num_thresholds=100, includesft=False, outputmode=0, isOnlyAtlas = False):
         Dataset.__init__(self, datapath, beginning, ending, thrpath, num_thresholds=num_thresholds)
+        self.isOnlyAtlas = isOnlyAtlas
+
+        if isOnlyAtlas:
+            self.npzFileName = "Data_0001_thr2.npz"
+            self.paramsFileName = "parameter_tag2.pkl"
+        else: 
+            self.npzFileName = "Data_0001.npz"
+            self.paramsFileName = "parameter_tag.pkl"
+
+
         self.includesft = includesft
         self.outputmode = outputmode
         self.necroticpath = necroticpath
-        self.necrotic_paths = sorted(glob("{}/*".format(self.necroticpath)))[self.beginning : self.ending]
-        assert len(self.necrotic_paths) == self.datasetsize
+        #self.necrotic_paths = sorted(glob("{}/*".format(self.necroticpath)))[self.beginning : self.ending]
+        #assert len(self.necrotic_paths) == self.datasetsize
 
     def __len__(self):
         return self.datasetsize
@@ -102,7 +112,7 @@ class Dataset2(Dataset):
     def __getitem__(self, index):
         file_path = self.all_paths[index]
         thr_path = self.threshold_paths[index]
-        necrotic_path = self.necrotic_paths[index]
+        #necrotic_path = self.necrotic_paths[index]
 
         with np.load(thr_path) as thresholdsfile:
             t1gd_thr = thresholdsfile['t1gd'][self.epoch % self.num_thresholds]
@@ -110,58 +120,69 @@ class Dataset2(Dataset):
             assert t1gd_thr >= 0.5 and t1gd_thr <= 0.85
             assert flair_thr >= 0.05 and flair_thr <= 0.5
 
-        with np.load(necrotic_path) as necroticfile:
-            necrotic_thr = necroticfile['necrotic'][self.epoch % self.num_thresholds]
-            assert necrotic_thr >= 0.95 and necrotic_thr <= 1.0
+        #with np.load(necrotic_path) as necroticfile:
+        #    necrotic_thr = necroticfile['necrotic'][self.epoch % self.num_thresholds]
+        #    assert necrotic_thr >= 0.95 and necrotic_thr <= 1.0
+        
         # print("got pos " + str(index) + " which corresponds to " + str(file_path))
-        with np.load(file_path + "Data_0001_thr2.npz") as data:
+        with np.load(file_path + self.npzFileName) as data:
             # thrvolume = data['thr2_data']
             volume = data['data']
-            volume_resized = volume
-            #volume_resized = np.delete(np.delete(np.delete(volume, 128, 0), 128, 1), 128, 2)  # from 129x129x129 to 128x128x128
-            # TODO: check if deletion removed nonzero entries (especially last slice: thrvolume[...][...][128])
+        volume_resized = volume
+        
+        t1gd_volume = (volume_resized >= t1gd_thr).astype(float)
+        flair_volume = (volume_resized >= flair_thr).astype(float)
 
-            # t1gd_thr = round(0.35 * self.rngs[index].rand() + 0.5, 5)
-            # flair_thr = round(0.45 * self.rngs[index].rand() + 0.05, 5)
+        thr_volume = 0.666 * t1gd_volume + 0.333 * flair_volume
 
-            t1gd_volume = (volume_resized >= t1gd_thr).astype(float)
-            flair_volume = (volume_resized >= flair_thr).astype(float)
+        thrvolume_resized = np.expand_dims(thr_volume, -1)  # now it is 129x129x129x1
+        #print(thrvolume_resized.shape)
 
-            thr_volume = 0.666 * t1gd_volume + 0.333 * flair_volume
+        #b = 0.5
 
-            thrvolume_resized = np.expand_dims(thr_volume, -1)  # now it is 129x129x129x1
-            #print(thrvolume_resized.shape)
 
-            #b = 0.5
+        ''' # not used Petvolume
+        pet_volume = ((volume_resized >= t1gd_thr) * volume_resized)
+        #pet_volume = (pet_volume <= necrotic_thr) * pet_volume
+        pet_volume_max = pet_volume.max()
+        assert pet_volume_max >= 0.0
+        if pet_volume_max == 0.0:
+            print("LIGHT WARNING: empty pet volume for {file_path}")
+            #no division by max, volume is left empty
+        else:
+            pet_volume = pet_volume / pet_volume.max()
+        #print(pet_volume.shape)
+        pet_volume_reshaped = np.expand_dims(pet_volume, -1) #now 129x129x129x1
+        #print(pet_volume_reshaped.shape)'''
 
-            pet_volume = ((volume_resized >= t1gd_thr) * volume_resized)
-            pet_volume = (pet_volume <= necrotic_thr) * pet_volume
-            pet_volume_max = pet_volume.max()
-            assert pet_volume_max >= 0.0
-            if pet_volume_max == 0.0:
-                print("LIGHT WARNING: empty pet volume for {file_path}")
-                #no division by max, volume is left empty
-            else:
-                pet_volume = pet_volume / pet_volume.max()
-            #print(pet_volume.shape)
-            pet_volume_reshaped = np.expand_dims(pet_volume, -1) #now 129x129x129x1
-            #print(pet_volume_reshaped.shape)
+        #include white matter:
+        if self.isOnlyAtlas:
+            #put in tumor twice
+            nn_input = np.concatenate((thrvolume_resized, thrvolume_resized), -1)
+        else:
+            with np.load(file_path + "sim_output_WM.npz") as data:
+                whiteMatter = data['data']
 
-            nn_input = np.concatenate((thrvolume_resized, pet_volume_reshaped), -1)
-            #print(nn_input.shape)
+            whiteMatter_resized = np.expand_dims(whiteMatter, -1)
 
-            if self.includesft:
-                '''
-                ft = np.abs(np.fft.fftshift(np.fft.fftn(thr_volume + pet_volume, norm='ortho')))
-                ft_reshaped = np.expand_dims((ft / np.max(ft)), -1)
-                #nn_input = np.concatenate((nn_input, ft_reshaped), -1)
-                nn_input = ft_reshaped  # OVERWRITES NN_INPUT, IS NOW ONLY FOURIER TRANSFORM, NOT SPATIAL TUMOR!
-                if index == 0:
-                    print("Shape is " + str(nn_input.shape) + ", should be (129,129,129,1)")
-                '''
-                raise Exception("no support for ft in this version")
+            # change take the tumor volume twice 
+            #nn_input = np.concatenate((thrvolume_resized, thrvolume_resized), -1)
+            nn_input = np.concatenate((thrvolume_resized, whiteMatter_resized), -1)
 
-        with open(file_path + "parameter_tag2.pkl", "rb") as par:
+        #print(nn_input.shape)
+
+        if self.includesft:
+            '''
+            ft = np.abs(np.fft.fftshift(np.fft.fftn(thr_volume + pet_volume, norm='ortho')))
+            ft_reshaped = np.expand_dims((ft / np.max(ft)), -1)
+            #nn_input = np.concatenate((nn_input, ft_reshaped), -1)
+            nn_input = ft_reshaped  # OVERWRITES NN_INPUT, IS NOW ONLY FOURIER TRANSFORM, NOT SPATIAL TUMOR!
+            if index == 0:
+                print("Shape is " + str(nn_input.shape) + ", should be (129,129,129,1)")
+            '''
+            raise Exception("no support for ft in this version")
+
+        with open(file_path + self.paramsFileName, "rb") as par:
             # TODO: interpolate with manual formulas (e.g. uth: 10x - 7)
             # TODO: rounding to 6 digits?
             params = pickle.load(par)
@@ -231,5 +252,6 @@ class Dataset2(Dataset):
             '''
 
         nninput_resized = nn_input.transpose((3, 0, 1, 2))
+
         return torch.from_numpy(nninput_resized.astype(np.float32)), torch.from_numpy(paramsarray.astype(np.float32))
 
