@@ -190,9 +190,9 @@ necroticpath = "/mnt/Drive2/ivan_kevin/thresholds/necroticthrs"
 
 all_paths = sorted(glob("{}/*/".format(datapath)))[start : end]
 thr_paths = sorted(glob("{}/*".format(thrpath)))[start : end]
-necrotic_paths = sorted(glob("{}/*".format(necroticpath)))[start : end]
+#necrotic_paths = sorted(glob("{}/*".format(necroticpath)))[start : end]
 
-assert len(all_paths) == len(thr_paths) == len(necrotic_paths)
+assert len(all_paths) == len(thr_paths) #== len(necrotic_paths)
 print(len(all_paths))
 
 print("l2 and l4 should always be equal (except for rounding error)!! IF NOT, THEN YOU ARE PREDICTING ON THE WRONG TUMOR!")
@@ -282,30 +282,30 @@ for i in range(0, len(all_paths)):
     print(dicescores)
     if visualize:
         thr_path = thr_paths[i]
-        necr_path = necrotic_paths[i]
+        #necr_path = necrotic_paths[i]
         print(f"thr_path: {thr_path}")
-        print(f"necr_path: {necr_path}")
+        #print(f"necr_path: {necr_path}")
         with np.load(thr_path) as thresholdsfile:
             t1gd_thr = thresholdsfile['t1gd'][0]
             flair_thr = thresholdsfile['flair'][0]
             assert t1gd_thr >= 0.5 and t1gd_thr <= 0.85
             assert flair_thr >= 0.05 and flair_thr <= 0.5
 
-        with np.load(necr_path) as necroticfile:
-            necrotic_thr = necroticfile['necrotic'][0]
-            assert necrotic_thr >= 0.95 and necrotic_thr <= 1.0
+        #with np.load(necr_path) as necroticfile:
+        #    necrotic_thr = necroticfile['necrotic'][0]
+        #    assert necrotic_thr >= 0.95 and necrotic_thr <= 1.0
 
-        print(f"t1gd_thr: {t1gd_thr}, flair_thr: {flair_thr}, necrotic_thr: {necrotic_thr}")
+        #print(f"t1gd_thr: {t1gd_thr}, flair_thr: {flair_thr}, necrotic_thr: {necrotic_thr}")
         t1gd_volume = (gt_tumor >= t1gd_thr).astype(float)
         flair_volume = (gt_tumor >= flair_thr).astype(float)
         thresholded_volume = 0.666 * t1gd_volume + 0.333 * flair_volume
 
         pet_volume = ((gt_tumor >= t1gd_thr) * gt_tumor)
-        pet_volume = (pet_volume <= necrotic_thr) * pet_volume
+        #pet_volume = (pet_volume <= necrotic_thr) * pet_volume
         pet_volume_max = pet_volume.max()
         assert pet_volume_max >= 0.0
         if pet_volume_max == 0.0:
-            print(f"LIGHT WARNING: empty pet volume for {path}")
+            print(f"LIGHT WARNING: empty pet volume for {path}",path)
             # no division by max, volume is left empty
         else:
             pet_volume = pet_volume / pet_volume.max()

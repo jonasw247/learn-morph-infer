@@ -221,14 +221,14 @@ if is_ugt:
     thresholds_scans = np.load(thresholdsdir + "/scanthresholds.npz")
     t1gd_thresholds = thresholds_scans['t1gd'][start : stop]
     flair_thresholds = thresholds_scans['flair'][start : stop]
-    necrotic_thresholds = thresholds_scans['necrotic'][start : stop]
+    #necrotic_thresholds = thresholds_scans['necrotic'][start : stop]
 
-    if printeverything:
-        print(f"t1gd_thresholds: {t1gd_thresholds}, flair_thresholds: {flair_thresholds}, necrotic_thresholds: {necrotic_thresholds}")
+    #if printeverything:
+    #    print(f"t1gd_thresholds: {t1gd_thresholds}, flair_thresholds: {flair_thresholds}, necrotic_thresholds: {necrotic_thresholds}")
 
     assert len(t1gd_thresholds) == stop - start
     assert len(flair_thresholds) == stop - start
-    assert len(necrotic_thresholds) == stop - start
+    #assert len(necrotic_thresholds) == stop - start
 
 
 resultstosave = []
@@ -239,14 +239,14 @@ for (i, path) in enumerate(data_paths):
             volume = data['data']
             t1gd = t1gd_thresholds[i]
             flair = flair_thresholds[i]
-            necrotic = necrotic_thresholds[i]
-            print(f"t1gd: {t1gd}, flair: {flair}, necrotic: {necrotic}")
+            #necrotic = necrotic_thresholds[i]
+            #print(f"t1gd: {t1gd}, flair: {flair}, necrotic: {necrotic}")
             t1gd_scan = (volume >= t1gd).astype(float)
             flair_scan = (volume >= flair).astype(float)
             mri_scan = 0.666 * t1gd_scan + 0.333 * flair_scan
 
             pet_scan = (volume >= t1gd) * volume
-            pet_scan = (pet_scan <= necrotic) * pet_scan
+            #pet_scan = (pet_scan <= necrotic) * pet_scan
 
             if pet_scan.max() != 0.0:
                 pet_scan = pet_scan / pet_scan.max()
@@ -365,7 +365,7 @@ for (i, path) in enumerate(data_paths):
 
         print(f"diceresults = {diceresults}")
 
-        resultstosave.append({"t1gd": t1gd, "flair": flair, "necrotic": necrotic,
+        resultstosave.append({"t1gd": t1gd, "flair": flair, #"necrotic": necrotic,
                               "mu1_gt": mu1_gt, "mu2_gt": mu2_gt,
                               "mu1_predicted": mu1_predicted, "mu2_predicted": mu2_predicted,
                               "icx_gt": icx_gt, "icy_gt": icy_gt, "icz_gt": icz_gt,
