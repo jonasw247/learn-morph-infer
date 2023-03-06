@@ -134,35 +134,52 @@ endtrain = args.endtrain #6400 / 16000 / 32000 / 64000 / 80000
 startval = args.startval #6400 / 16000 / 32000 / 64000 / 80000 - external validation: 80000
 endval = args.endval #7040 / 17600 - 17664 / 35200 / 70400 / 88000 - external validation: 88000
 
-
-data_path="/home/ivan/ib/learnmorph/samples_extended_thr2/Dataset/"
-mri_threshold_path="/home/ivan/ib/learnmorph/files"
+isOnlyAtlas = False
+if isOnlyAtlas:
+    data_path= "/mnt/Drive3/ivan_kevin/samples_extended_thr2_testset"
+else: 
+    data_path= "/home/home/jonas/programs/synthetic_data/2023_3_5___21_55_34_First10k/Dataset/npz_data"
+    # first 10k samples from 200 brains # "/home/home/jonas/programs/synthetic_data/2023_3_5___21_55_34_First10k/Dataset/npz_data"
+    # 5k samples: # "/home/home/jonas/programs/synthetic_data/2023_3_1___23_25_44_/Dataset/npz_data"
+#other possible pathes:
+#"/mnt/Drive3/ivan_kevin/samples_extended_thr2_testset"#"/mnt/Drive3/ivan_kevin/samples_extended_thr2/Dataset/"#"/home/ivan/ib/learnmorph/samples_extended_thr2/Dataset/"
+mri_threshold_path= "/mnt/Drive3/ivan_kevin/thresholds/files"# "/home/ivan/ib/learnmorph/files"
 necro_threshold_path="/home/ivan/ib/learnmorph/necroticthrs"
 
 train_dataset = Dataset2(data_path, starttrain, endtrain,
                         mri_threshold_path, necro_threshold_path,
                          num_thresholds=num_thresholds, includesft=includesft,
-                         outputmode=outputmode)
+                         outputmode=outputmode, isOnlyAtlas=isOnlyAtlas)
+#maxLength = len(train_dataset) // batch_size * batch_size
+#train_dataset = train_dataset[:maxLength]
 train_generator = torch.utils.data.DataLoader(train_dataset, 
                     batch_size=batch_size, shuffle=True, num_workers=num_workers)
 
 val_dataset = Dataset2(data_path, startval, endval,
                       mri_threshold_path, necro_threshold_path,
-                       includesft=includesft, outputmode=outputmode)
+                       includesft=includesft, outputmode=outputmode, isOnlyAtlas=isOnlyAtlas)
 val_generator = torch.utils.data.DataLoader(val_dataset, 
                     batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
 if is_new_save:
+    print(len(train_dataset) % batch_size , len(train_dataset), batch_size )
+
+    # TODO should be fixed
     assert len(train_dataset) % batch_size == 0
     if len(val_dataset) % batch_size != 0:
         print("WARNING: val dataset size is not multiple of batch size!")
         time.sleep(30)
 
+savelogdir = '/home/home/jonas/programs/learn-morph-infer/log/'
+writer = SummaryWriter(log_dir = savelogdir)
+writerval = SummaryWriter(log_dir = savelogdir + '/val')
+
 # Setting up model
 if is_new_save:
-    savelogdir = '/home/ivan/ib/learnmorph/log/torchimpl/' + currenttime + purpose
+    savelogdir = '/home/home/jonas/programs/learn-morph-infer/log/' + currenttime + purpose # '/home/ivan/ib/learnmorph/log/torchimpl/' + currenttime + purpose
     writer = SummaryWriter(log_dir = savelogdir)
     writerval = SummaryWriter(log_dir = savelogdir + '/val')
+
 
 modelfun = NetConstant_noBN_64_n4_l4_inplacefull
 model = modelfun(numoutputs=numoutputs, dropoutrate=dropoutrate, includesft=includesft)
