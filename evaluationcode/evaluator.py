@@ -130,7 +130,7 @@ for i in range(0, len(all_paths)):
     print(f"y: {y}")
     print(f"ypredicted: {ypredicted}")
 
-    with open(path + "parameter_tag2.pkl", "rb") as par:
+    with open(path + "parameter_tag.pkl", "rb") as par:
         params = pickle.load(par)
 
     gt_inrange_inpkl = (params['Dw'], params['rho'], params['Tend'], params['icx'], params['icy'], params['icz'])
@@ -320,7 +320,7 @@ for i in range(0, len(all_paths)):
     print(f"y: {y}")
     print(f"ypredicted: {ypredicted}")
 
-    with open(path + "parameter_tag2.pkl", "rb") as par:
+    with open(path + "parameter_tag.pkl", "rb") as par:
         params = pickle.load(par)
 
     gt_inrange_inpkl = (params['Dw'], params['rho'], params['Tend'], params['icx'], params['icy'], params['icz'])
@@ -380,3 +380,4 @@ for i in range(0, len(all_paths)):
 with open('evalresults' + str(parapid) + '.pkl', 'wb') as save:
     pickle.dump(diceresults, save)
 '''
+# %%
