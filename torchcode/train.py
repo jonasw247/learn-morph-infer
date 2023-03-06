@@ -49,6 +49,11 @@ def train(num_epochs, model, train_dataset, train_generator, optimizer, device, 
             running_training_loss += cost
             writer.add_scalar('Loss/train', cost, step)
 
+            myLoss = torch.mean((y_predicted - y)**2, axis = 0)
+
+            writer.add_scalar('Loss/train_mu1', myLoss[0], step)
+            writer.add_scalar('Loss/train_mu2', myLoss[1], step)
+
             print ('Epoch: %03d/%03d | Batch %03d/%03d | Cost: %.6f'
                    %(epoch+1, num_epochs, batch_idx + 1,
                      numberofbatches, cost))
