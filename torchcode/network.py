@@ -138,7 +138,7 @@ class NetConstant_noBN_l4_inplacefull(torch.nn.Module):
         super(NetConstant_noBN_l4_inplacefull, self).__init__()
 
         if not includesft:
-            self.inplanes = 2  # initial number of channels
+            self.inplanes = 4  # initial number of channels
         else:
             raise Exception("no ft")
 

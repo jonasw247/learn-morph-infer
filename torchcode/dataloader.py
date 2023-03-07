@@ -162,14 +162,19 @@ class Dataset2(Dataset):
         else:
             with np.load(file_path + "sim_output_WM.npz") as data:
                 whiteMatter = data['data']
+            with np.load(file_path + "sim_output_GM.npz") as data:
+                grayMatter = data['data']
+            with np.load(file_path + "sim_output_CSF.npz") as data:
+                csfMatter = data['data']
+
 
             whiteMatter_resized = np.expand_dims(whiteMatter, -1)
+            grayMatter_resized = np.expand_dims(grayMatter, -1)
+            csfMatter_resized = np.expand_dims(csfMatter, -1)
 
             # change take the tumor volume twice 
             #nn_input = np.concatenate((thrvolume_resized, thrvolume_resized), -1)
-            nn_input = np.concatenate((thrvolume_resized, whiteMatter_resized), -1)
-
-        #print(nn_input.shape)
+            nn_input = np.concatenate((thrvolume_resized, whiteMatter_resized, grayMatter_resized, csfMatter_resized), -1)
 
         if self.includesft:
             '''
@@ -193,6 +198,11 @@ class Dataset2(Dataset):
 
             lambdaw = np.sqrt(Dw / rho) #cm
             mu = Tend * rho #constant
+
+            # todojonas check the following new parameters as used in in LMI
+            # mu1 = lambdaw * sqrt(mu)
+            # mu2 = sqrt(mu)
+            
             velocity = 2 * np.sqrt(Dw * rho) #cm / d
 
             if self.outputmode == 0:

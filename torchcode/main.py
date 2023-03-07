@@ -190,14 +190,14 @@ summarystring = repr(model)
 print(summarystring)
 
 if not includesft:
-    additionalsummary, _ = summary_string(model, (2,129,129,129), device="cpu") #additional summary is done on cpu (only once), model not yet on gpu
+    additionalsummary, _ = summary_string(model, (4,129,129,129), device="cpu") #additional summary is done on cpu (only once), model not yet on gpu
 else:
     additionalsummary, _ = summary_string(model, (1, 129, 129, 129), device="cpu")
 print(additionalsummary)
 
 if is_new_save:
     if not includesft:
-        writer.add_graph(model, Variable(torch.rand(1,2,129,129,129)))
+        writer.add_graph(model, Variable(torch.rand(1,4,129,129,129)))
     else:
         writer.add_graph(model, Variable(torch.rand(1, 1, 129, 129, 129)))
 
