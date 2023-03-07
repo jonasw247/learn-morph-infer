@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 main.py --isnewsave --outputmode 3 --gpu 5 --purpose jonasTest_with10kSamplesDiffBGTissueCompareNowWM --batch_size 32 --num_workers 5 --starttrain 0 --endtrain 8000 --startval 8000 --endval 9984 --dropoutrate 0.0 --lr 0.00006 --lr_scheduler_rate 0.999997 --weight_decay_sgd 0.05 --savelogdir="./result/" --num_epochs 50
+python3 main.py --isnewsave --outputmode 3 --gpu 5 --purpose jonasTest_with10kSamplesDiffBGTissueWMGMCSF --batch_size 32 --num_workers 5 --starttrain 0 --endtrain 8000 --startval 8000 --endval 9984 --dropoutrate 0.0 --lr 0.00006 --lr_scheduler_rate 0.999997 --weight_decay_sgd 0.05 --savelogdir="./result/" --num_epochs 50
