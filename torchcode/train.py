@@ -51,8 +51,16 @@ def train(num_epochs, model, train_dataset, train_generator, optimizer, device, 
 
             myLoss = torch.mean((y_predicted - y)**2, axis = 0)
 
-            writer.add_scalar('Loss/train_mu1', myLoss[0], step)
-            writer.add_scalar('Loss/train_mu2', myLoss[1], step)
+            if outputmode == 7:
+                writer.add_scalar('Loss/train_mu1', myLoss[0], step)
+                writer.add_scalar('Loss/train_mu2', myLoss[1], step)
+            
+            if outputmode == 8:
+                writer.add_scalar('Loss/train_mu1', myLoss[0], step)
+                writer.add_scalar('Loss/train_mu2', myLoss[1], step)
+                writer.add_scalar('Loss/train_x', myLoss[2], step)
+                writer.add_scalar('Loss/train_y', myLoss[3], step)
+                writer.add_scalar('Loss/train_z', myLoss[4], step)
 
             print ('Epoch: %03d/%03d | Batch %03d/%03d | Cost: %.6f'
                    %(epoch+1, num_epochs, batch_idx + 1,
@@ -84,8 +92,17 @@ def train(num_epochs, model, train_dataset, train_generator, optimizer, device, 
 
                 myLoss = torch.mean((y_predicted - y)**2, axis = 0)
 
-                writer.add_scalar('Loss/val_mu1', myLoss[0], step_val)
-                writer.add_scalar('Loss/val_mu2', myLoss[1], step_val)
+                if outputmode == 7:
+                    writer.add_scalar('Loss/val_mu1', myLoss[0], step)
+                    writer.add_scalar('Loss/val_mu2', myLoss[1], step)
+            
+                if outputmode == 8:
+                    writer.add_scalar('Loss/val_mu1', myLoss[0], step)
+                    writer.add_scalar('Loss/val_mu2', myLoss[1], step)
+                    writer.add_scalar('Loss/val_x', myLoss[2], step)
+                    writer.add_scalar('Loss/val_y', myLoss[3], step)
+                    writer.add_scalar('Loss/val_z', myLoss[4], step)
+                
                 writer.add_scalar('Loss/val', cost, step_val)
                 print ('Validating: %03d | Batch %03d/%03d | Cost: %.4f'
                    %(epoch+1, batch_idy + 1, numberofbatches_val, cost))

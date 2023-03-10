@@ -63,6 +63,8 @@ parser.add_argument('--savelogdir', default="./result/", type=str)
 #2: x,y,z
 #3: lambda, mu
 #6: lambda, mu,x,y,z -> new outputmode
+#7: mu1, mu2 
+#8: mu1, mu2, x, y, z
 
 args = parser.parse_args()
 print(args)
@@ -123,6 +125,10 @@ if is_new_save:
         numoutputs = 3
     elif outputmode == 6:
         numoutputs = 5
+    elif outputmode == 7:
+        numoutputs = 2
+    elif outputmode == 8:
+        numoutputs = 5
     else:
         raise Exception("invalid output mode")
 else:
@@ -138,7 +144,8 @@ isOnlyAtlas = False
 if isOnlyAtlas:
     data_path= "/mnt/Drive3/ivan_kevin/samples_extended_thr2_testset"
 else: 
-    data_path= "/home/home/jonas/programs/synthetic_data/2023_3_5___21_55_34_First10k/Dataset/npz_data"
+    data_path= "/home/home/jonas/programs/synthetic_data/2023_3_5___21_55_34_Sampled30k/Dataset/npz_data"
+    #"/home/home/jonas/programs/synthetic_data/2023_3_5___21_55_34_First10k/Dataset/npz_data"
     # first 10k samples from 200 brains # "/home/home/jonas/programs/synthetic_data/2023_3_5___21_55_34_First10k/Dataset/npz_data"
     # 5k samples: # "/home/home/jonas/programs/synthetic_data/2023_3_1___23_25_44_/Dataset/npz_data"
 #other possible pathes:

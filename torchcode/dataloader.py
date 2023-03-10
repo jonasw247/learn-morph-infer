@@ -200,8 +200,8 @@ class Dataset2(Dataset):
             mu = Tend * rho #constant
 
             # todojonas check the following new parameters as used in in LMI
-            # mu1 = lambdaw * sqrt(mu)
-            # mu2 = sqrt(mu)
+            mu1 = np.sqrt(Dw * Tend)
+            mu2 = np.sqrt(rho * Tend)
             
             velocity = 2 * np.sqrt(Dw * rho) #cm / d
 
@@ -244,6 +244,17 @@ class Dataset2(Dataset):
                 paramsarray = np.zeros(5)
                 paramsarray[0] = np.interp(lambdaw, [np.sqrt(0.001), np.sqrt(7.5)], normalization_range)
                 paramsarray[1] = np.interp(mu, [0.1, 300.0], normalization_range)
+                paramsarray[2] = np.interp(params['icx'], [0.15, 0.7], normalization_range)
+                paramsarray[3] = np.interp(params['icy'], [0.2, 0.8], normalization_range)
+                paramsarray[4] = np.interp(params['icz'], [0.15, 0.7], normalization_range)
+            elif self.outputmode == 7:
+                paramsarray = np.zeros(2)
+                paramsarray[0] = np.interp(mu1, [np.sqrt(0.01), np.sqrt(22.5)], normalization_range)
+                paramsarray[1] = np.interp(mu2, [np.sqrt(0.1), np.sqrt(300)], normalization_range)
+            elif self.outputmode == 8:
+                paramsarray = np.zeros(5)
+                paramsarray[0] = np.interp(mu1, [np.sqrt(0.01), np.sqrt(22.5)], normalization_range)
+                paramsarray[1] = np.interp(mu2, [np.sqrt(0.1), np.sqrt(300)], normalization_range)
                 paramsarray[2] = np.interp(params['icx'], [0.15, 0.7], normalization_range)
                 paramsarray[3] = np.interp(params['icy'], [0.2, 0.8], normalization_range)
                 paramsarray[4] = np.interp(params['icz'], [0.15, 0.7], normalization_range)
